@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/chrome-manifest",
+  "manifest_version": 3,
+  "name": "Tab Reorder",
+  "version": "1.0",
+  "background": {
+    "scripts": ["out/background.js"]
+  },
+  "permissions": ["activeTab", "tabs"],
+  "action": {
+    "default_title": "Reorder Tabs",
+    "default_icon": {
+      "48": "resources/small.png"
+    }
+  },
+  "host_permissions": ["<all_urls>"]
+}
