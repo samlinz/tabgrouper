@@ -4,18 +4,23 @@
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
+    "@jest/globals": "^29.7.0",
     "@types/webextension-polyfill": "^0.12.1",
     "esbuild": "^0.23.1",
+    "nodemon": "^3.1.4",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.6.2",
     "web-ext-types": "^3.2.1",
     "webextension-polyfill": "^0.12.0"
   },
-  "dependencies": {
-    "nodemon": "^3.1.4",
-    "typescript": "^5.6.2"
-  },
   "scripts": {
     "build": "node build.js",
-    "start": "web-ext run",
-    "dev": "npx nodemon -w ./src -e ts --exec node build.js"
+    "start": "npx web-ext run",
+    "dev": "npx nodemon -w ./src -e ts --exec node build.js",
+    "test": "npx jest",
+    "test:watch": "npx jest --watch"
+  },
+  "dependencies": {
+    "jest": "^29.7.0"
   }
 }
