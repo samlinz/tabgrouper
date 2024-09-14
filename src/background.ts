@@ -1,18 +1,30 @@
-import browser, { Tabs } from "webextension-polyfill";
+import browser from "webextension-polyfill";
+import { DefaultSortFunction, SortFunctions } from "./constants";
+import { BrowserTab, Tab, TabSortingFunction } from "./shared";
+import {
+  getFullSortFunctionSettings,
+  getStoredSetting,
+  SortFunctionsKeys,
+  StorageKeys,
+} from "./shared-browser";
+
+const buildSortFunction = async (): Promise<TabSortingFunction> => {
+  const storedSortFunctionKey = await getStoredSetting(
+    StorageKeys.sortingFunction
+  );
+  const sortFunctionKey =
+    (storedSortFunctionKey as SortFunctionsKeys) ?? DefaultSortFunction;
+  const sortFunction = SortFunctions[sortFunctionKey];
+  const storedSettings = await getFullSortFunctionSettings(
+    sortFunctionKey,
+    SortFunctions
+  );
+  return sortFunction(storedSettings);
+};
 
 browser.action.onClicked.addListener(() => {
   reorderTabs();
 });
-
-type BrowserTab = Tabs.Tab;
-
-type Tab = {
-  id: number | undefined;
-  index: number;
-  url: URL | null;
-};
-
-type SortTabs = (a: Tab, b: Tab) => number;
 
 const buildTabs = (tab: BrowserTab): Tab => {
   return {
@@ -22,30 +34,32 @@ const buildTabs = (tab: BrowserTab): Tab => {
   };
 };
 
-const sortTabs1: SortTabs = (a, b) => {
-  if (!a.url) return -1;
-  if (!b.url) return 1;
-  return a.url.hostname.localeCompare(b.url.hostname);
-};
-
 const reorderTabs = () => {
-  browser.tabs.query({ currentWindow: true }).then((tabs) => {
-    const originalTabs = tabs.map(buildTabs);
+  browser.tabs
+    .query({ currentWindow: true })
+    .then(async (tabs) => {
+      const originalTabs = tabs.map(buildTabs);
 
-    const sortFn: SortTabs = sortTabs1;
-    const sortedTabs = [...originalTabs].sort(sortFn);
+      console.log({ originalTabs }, "Original tabs");
 
-    const unsortedTabIds = originalTabs.map((tab) => tab.id) as number[];
-    const sortedTabIds = sortedTabs.map((tab) => tab.id) as number[];
+      const sortFn: TabSortingFunction = await buildSortFunction();
+      const sortedTabs = [...originalTabs].sort(sortFn);
 
-    console.debug(
-      {
-        unsortedTabIds,
-        sortedTabIds,
-      },
-      "Sorting tabs"
-    );
+      const unsortedTabIds = originalTabs.map((tab) => tab.id) as number[];
+      const sortedTabIds = sortedTabs.map((tab) => tab.id) as number[];
 
-    browser.tabs.move(sortedTabIds, { index: -1 });
-  });
+      console.debug(
+        {
+          unsortedTabIds,
+          sortedTabIds,
+        },
+        "Sorting tabs"
+      );
+
+      browser.tabs.move(sortedTabIds, { index: -1 });
+    })
+    .catch((error) => {
+      console.error(error);
+      window.alert("Error sorting tabs; see console");
+    });
 };

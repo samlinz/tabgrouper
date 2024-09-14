@@ -8,12 +8,16 @@
   "icons": {
     "48": "resources/small.png"
   },
-  "permissions": ["activeTab", "tabs"],
+  "permissions": ["activeTab", "tabs", "storage"],
   "action": {
     "default_title": "Group Tabs",
     "default_icon": {
       "48": "resources/small.png"
     }
   },
-  "host_permissions": ["<all_urls>"]
+  "host_permissions": ["<all_urls>"],
+  "options_ui": {
+    "page": "out/options.html",
+    "open_in_tab": true
+  }
 }
